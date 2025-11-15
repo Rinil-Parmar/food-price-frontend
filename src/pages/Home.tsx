@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import SearchBar from "../components/SearchBar";
-import DealCard from "../components/DealCard";
 import StoreCard from "../components/StoreCard";
 import { Link } from "react-router-dom";
 import type { Product } from "../types/Product";
@@ -10,6 +9,7 @@ import metroLogo from "../assets/Metro.jpg";
 import freshcoLogo from "../assets/FreshCo.png";
 import sobeysLogo from "../assets/Sobeys.png";
 import nofrillsLogo from "../assets/NoFrills.jfif";
+import ProductCard from "../components/ProductCard";
 
 const Home = () => {
   const [deals, setDeals] = useState<Product[]>([]);
@@ -57,7 +57,7 @@ const Home = () => {
 
           {/* Top Stores */}
           <section className="mb-16">
-            <h2 className="text-2xl sm:text-3xl font-semibold mb-6 text-gray-900">
+            <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-gray-900">
               Top Stores
             </h2>
 
@@ -82,16 +82,25 @@ const Home = () => {
 
           {/* Trending Deals */}
           <section className="mb-16">
-            <h2 className="text-2xl sm:text-3xl font-semibold mb-6 text-gray-900">
+            <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-gray-900">
               Trending Deals
             </h2>
 
             {loading ? (
-              <p className="text-gray-600">Loading deals...</p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6">
+                {[...Array(5)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="h-48 bg-gray-200 animate-pulse rounded-xl"
+                  />
+                ))}
+              </div>
+            ) : deals.length === 0 ? (
+              <p className="text-gray-600">No deals available right now.</p>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
                 {deals.map((deal) => (
-                  <DealCard key={deal.id} item={deal} />
+                  <ProductCard key={deal.id} product={deal} />
                 ))}
               </div>
             )}

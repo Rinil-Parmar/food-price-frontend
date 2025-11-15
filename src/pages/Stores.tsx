@@ -72,9 +72,17 @@ export default function Stores() {
 
   return (
     <div className="max-w-7xl mx-auto px-6 md:px-12 py-10">
+       {/* Background blobs */}
+        <div
+          className="absolute -top-32 left-1/2 -z-10 h-[40rem] w-[70rem] -translate-x-1/2 blur-3xl"
+          style={{
+            background:
+              "radial-gradient(circle at center, rgba(37,99,235,0.15), transparent 70%)",
+          }}
+        />
       {/* Store Selection */}
       <section className="mb-10">
-        <h2 className="text-2xl sm:text-3xl font-semibold mb-6 text-gray-900 text-center">
+        <h2 className="text-2xl sm:text-3xl mb-6 text-gray-900 font-bold">
           Select Store
         </h2>
 
@@ -85,7 +93,11 @@ export default function Stores() {
               onClick={() => setActiveStore(store.name)}
               className={`
                 cursor-pointer transition-transform transform hover:-translate-y-1 rounded-2xl
-                ${activeStore === store.name ? "scale-105 ring-2 ring-blue-600 shadow-lg" : "hover:shadow-md"}
+                ${
+                  activeStore === store.name
+                    ? "scale-105 ring-2 ring-blue-600 shadow-lg"
+                    : "hover:shadow-md"
+                }
               `}
             >
               <StoreCard name={store.name} image={store.logo} />
@@ -96,17 +108,24 @@ export default function Stores() {
 
       {/* Products Grid */}
       <section>
-        <h2 className="text-2xl sm:text-3xl font-semibold mb-6 text-gray-900">
+        <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-gray-900">
           Products in {activeStore}
         </h2>
 
         {loading ? (
-          <p className="text-gray-500">Loading products...</p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6">
+            {[...Array(5)].map((_, i) => (
+              <div
+                key={i}
+                className="h-48 bg-gray-200 animate-pulse rounded-xl"
+              />
+            ))}
+          </div>
         ) : products.length === 0 ? (
           <p className="text-gray-500">No products found for {activeStore}.</p>
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
               {products.map((product) => (
                 <ProductCard
                   key={product.id}
