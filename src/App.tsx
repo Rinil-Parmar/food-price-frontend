@@ -5,6 +5,8 @@ import MainLayout from "./pages/MainLayout";
 import About from "./pages/About";
 import NotFound from "./pages/NotFound";
 import Stores from "./pages/Stores";
+import Deals from "./pages/Deals";
+import Products from "./pages/Products";
 
 function App() {
   // const [count, setCount] = useState(0)
@@ -18,7 +20,8 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/stores" element={<Stores />} />
           <Route path="/about" element={<About />} />
-
+          <Route path="/deals" element={<Deals />} />
+          <Route path="/products" element={<Products />} />
         </Route>
         {/* Catch-all route for 404 */}
         <Route path="*" element={<NotFound />} />
