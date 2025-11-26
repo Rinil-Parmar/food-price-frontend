@@ -10,10 +10,13 @@ import freshcoLogo from "../assets/FreshCo.png";
 import sobeysLogo from "../assets/Sobeys.png";
 import nofrillsLogo from "../assets/NoFrills.jfif";
 import ProductCard from "../components/ProductCard";
+import { useNavigate } from "react-router-dom";
 
 const Home = () => {
   const [deals, setDeals] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     getTopDeals(10)
@@ -22,7 +25,7 @@ const Home = () => {
   }, []);
 
   const handleSearch = (query: string) => {
-    window.location.href = `/search?query=${query}`;
+    navigate(`/products?query=${query}`);
   };
 
   return (
@@ -100,7 +103,11 @@ const Home = () => {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
                 {deals.map((deal) => (
-                  <ProductCard key={deal.id} product={deal} />
+                  <ProductCard
+                    key={deal.id}
+                    product={deal}
+                    onClick={() => window.open(deal.productUrl, "_blank")}
+                  />
                 ))}
               </div>
             )}

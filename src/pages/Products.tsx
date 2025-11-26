@@ -3,6 +3,7 @@ import SearchBar from "../components/SearchBar";
 import ProductCard from "../components/ProductCard";
 import type { Product } from "../types/Product";
 import axios from "axios";
+import { useSearchParams } from "react-router-dom";
 
 interface CompareRequest {
   category?: string;
@@ -24,10 +25,28 @@ const Products = () => {
   const [clientPage, setClientPage] = useState<number>(0);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [filters, setFilters] = useState<CompareRequest>({});
+  const [correctedQuery, setCorrectedQuery] = useState<string>("");
+  const [originalQuery, setOriginalQuery] = useState<string>("");
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    const q = searchParams.get("query") || "";
+    setSearchQuery(q);
+
+    if (q.trim() === "") {
+      fetchProducts(true);
+    } else {
+      searchProducts(q);
+    }
+  }, [searchParams]);
 
   const fetchProducts = async (availability: boolean = true) => {
     setLoading(true);
-    // setMode("client");
+    setCorrectedQuery("");
+    setOriginalQuery("");
+    setSuggestions([]);
     try {
       const res = await axios.post(COMPARE_API, { availability });
       const data = res.data.data || [];
@@ -45,10 +64,29 @@ const Products = () => {
     setLoading(true);
     try {
       const res = await axios.get(`${SEARCH_API}?query=${query}`);
-      const data = res.data.data || [];
-      setAllFilteredProducts(data);
-      setClientPage(0);
-      paginateClientSide(data, 0);
+
+      // Handle spell check data
+      if (res.data.data && res.data.data.products) {
+        const searchData = res.data.data;
+        const productData = searchData.products || [];
+
+        setCorrectedQuery(searchData.correctedQuery || "");
+        setOriginalQuery(searchData.originalQuery || "");
+        setSuggestions(searchData.suggestions || []);
+
+        setAllFilteredProducts(productData);
+        setClientPage(0);
+        paginateClientSide(productData, 0);
+      } else {
+        // Fallback for direct product array
+        const data = res.data.data || [];
+        setCorrectedQuery("");
+        setOriginalQuery("");
+        setSuggestions([]);
+        setAllFilteredProducts(data);
+        setClientPage(0);
+        paginateClientSide(data, 0);
+      }
     } catch (error) {
       console.error(error);
     } finally {
@@ -58,6 +96,9 @@ const Products = () => {
 
   const applyFilters = async (filter: CompareRequest) => {
     setLoading(true);
+    setCorrectedQuery("");
+    setOriginalQuery("");
+    setSuggestions([]);
     try {
       const res = await axios.post(COMPARE_API, filter);
       const data = res.data.data || [];
@@ -77,11 +118,6 @@ const Products = () => {
     setProducts(data.slice(start, end));
   };
 
-  // Initial load on component mount
-  useEffect(() => {
-    fetchProducts(true);
-  }, []);
-
   const handleSearch = (query: string) => {
     setSearchQuery(query);
     setClientPage(0);
@@ -91,6 +127,11 @@ const Products = () => {
     } else {
       searchProducts(query);
     }
+  };
+
+  const handleSuggestionClick = (suggestion: string) => {
+    setSearchQuery(suggestion);
+    searchProducts(suggestion);
   };
 
   const handleFilter = (newFilters: CompareRequest) => {
@@ -125,6 +166,9 @@ const Products = () => {
     setFilters({});
     setSearchQuery("");
     setClientPage(0);
+    setCorrectedQuery("");
+    setOriginalQuery("");
+    setSuggestions([]);
     fetchProducts(true);
   };
 
@@ -155,14 +199,14 @@ const Products = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-         {/* Background blobs */}
-        <div
-          className="absolute -top-32 left-1/2 -z-10 h-[40rem] w-[70rem] -translate-x-1/2 blur-3xl"
-          style={{
-            background:
-              "radial-gradient(circle at center, rgba(37,99,235,0.15), transparent 70%)",
-          }}
-        />
+      {/* Background blobs */}
+      <div
+        className="absolute -top-32 left-1/2 -z-10 h-[40rem] w-[70rem] -translate-x-1/2 blur-3xl"
+        style={{
+          background:
+            "radial-gradient(circle at center, rgba(37,99,235,0.15), transparent 70%)",
+        }}
+      />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
@@ -175,6 +219,35 @@ const Products = () => {
 
         <div className="mb-6">
           <SearchBar onSearch={handleSearch} />
+
+          {/* Spell Check Notice */}
+          {correctedQuery &&
+            originalQuery &&
+            correctedQuery !== originalQuery && (
+              <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-gray-700">
+                  Showing results for{" "}
+                  <span className="font-semibold text-blue-700">
+                    "{correctedQuery}"
+                  </span>{" "}
+                  (corrected from "{originalQuery}")
+                </p>
+                {suggestions && suggestions.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-2 items-center">
+                    <span className="text-sm text-gray-600">Did you mean:</span>
+                    {suggestions.map((suggestion, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => handleSuggestionClick(suggestion)}
+                        className="text-sm px-3 py-1 bg-white border border-blue-300 rounded-full text-blue-600 hover:bg-blue-100 hover:border-blue-400 transition-colors"
+                      >
+                        {suggestion}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
         </div>
 
         <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6 mb-6">
@@ -346,7 +419,11 @@ const Products = () => {
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
               {products.map((product) => (
-                <ProductCard key={product.id} product={product} />
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  onClick={() => window.open(product.productUrl, "_blank")}
+                />
               ))}
             </div>
           </>
