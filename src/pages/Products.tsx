@@ -282,8 +282,15 @@ const Products = () => {
               >
                 <option value="">All Categories</option>
                 <option value="Drinks">Drinks</option>
-                <option value="Snacks">Snacks</option>
+                <option value="Fruits & Vegetables">Fruits & Vegetables</option>
                 <option value="Bakery">Bakery</option>
+                <option value="Dairy & Eggs">Dairy & Eggs</option>
+                <option value="Snacks & Candy">Snacks & Candy</option>
+                <option value="Frozen">Frozen</option>
+                <option value="Meat">Meat</option>
+                <option value="Lifestyle & dietary needs">
+                  Lifestyle & dietary needs
+                </option>
               </select>
             </div>
 
